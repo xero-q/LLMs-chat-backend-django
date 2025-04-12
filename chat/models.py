@@ -5,6 +5,10 @@ from django.db.models import OuterRef, Subquery, DateTimeField
 class Model(models.Model):
     name = models.CharField(max_length=255, unique=True)
     is_online = models.BooleanField(default=False)
+    base_url = models.CharField(max_length=255, blank=True, null=True)
+    is_openai = models.BooleanField(default=False)
+    api_environment_variable = models.CharField(
+        max_length=255, blank=True, null=True)
 
     def __str__(self):
         return f"{self.name} - {"Online" if self.is_online else "Offline"}"
@@ -13,7 +17,7 @@ class Model(models.Model):
 class Thread(models.Model):
     title = models.CharField(max_length=255, unique=True)
     model = models.ForeignKey(
-        Model, related_name='threads', on_delete=models.DO_NOTHING)
+        Model, related_name='threads', on_delete=models.CASCADE)
 
     def __str__(self):
         return f"{self.id} - {self.title}"

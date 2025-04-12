@@ -1,20 +1,43 @@
 import requests
 from openai import OpenAI
 from dotenv import load_dotenv
+from .models import Model
+import os
 
 load_dotenv()
 
 
+class OnlineHFChat():
+    def get_response(self, model: Model, user_prompt: str):
+        api_key = os.getenv(model.api_environment_variable)
+        base_url = model.base_url
+        headers = {"Authorization": f"Bearer {api_key}"}
+
+        data = {
+            "inputs": user_prompt,
+        }
+
+        response = requests.post(base_url, headers=headers, json=data)
+
+        if response.status_code == 200:
+            data = response.json()
+            return data[0]['generated_text']
+        else:
+            raise Exception(
+                f"Error getting response from AI API.\nResponse status: {response.status_code}\nMessage: {response.text}")
+
+
 class OnlineAIChat():
-    def get_response(self, model: str, user_prompt: str):
+    def get_response(self, model: Model, user_prompt: str):
         try:
-            client = OpenAI(base_url="https://api.deepinfra.com/v1/openai")
+            api_key = os.getenv(model.api_environment_variable)
+            client = OpenAI(api_key=api_key, base_url=model.base_url)
         except Exception as e:
-            raise Exception("Error creating OpenAI client")
+            raise Exception(f"Error creating OpenAI client.\n{e}")
 
         try:
             response = client.chat.completions.create(
-                model=model,
+                model=model.name,
                 messages=[
                     {"role": "user", "content": user_prompt}
                 ]

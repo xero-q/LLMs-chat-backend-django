@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import Thread, Prompt, Model
 from .serializers import ModelSerializer, ThreadSerializer, PromptSerializer
-from .utils import OnlineAIChat, OfflineAIChat
+from .utils import OnlineAIChat, OfflineAIChat, OnlineHFChat
 
 
 class ModelListView(ListAPIView):
@@ -45,16 +45,19 @@ def get_response_for_prompt(request, thread_id):
     if not model:
         return Response({"error": "Model not found"}, status=status.HTTP_404_NOT_FOUND)
 
-    if model.is_online:
-        chat_ai = OnlineAIChat()
+    if model.is_openai:
+        if model.is_online:
+            chat_ai = OnlineAIChat()
+        else:
+            chat_ai = OfflineAIChat()
     else:
-        chat_ai = OfflineAIChat()
+        chat_ai = OnlineHFChat()
 
     user_prompt = data.get('user_prompt')
 
     try:
         response = chat_ai.get_response(
-            model=model.name, user_prompt=user_prompt)
+            model=model, user_prompt=user_prompt)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
