@@ -45,13 +45,13 @@ def get_response_for_prompt(request, thread_id):
     if not model:
         return Response({"error": "Model not found"}, status=status.HTTP_404_NOT_FOUND)
 
-    if model.is_openai:
-        if model.is_online:
+    if model.is_online:
+        if model.is_openai:
             chat_ai = OnlineAIChat()
         else:
-            chat_ai = OfflineAIChat()
+            chat_ai = OnlineHFChat()
     else:
-        chat_ai = OnlineHFChat()
+        chat_ai = OfflineAIChat()
 
     user_prompt = data.get('user_prompt')
 

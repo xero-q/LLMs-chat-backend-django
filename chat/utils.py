@@ -49,7 +49,7 @@ class OnlineAIChat():
 
 
 class OfflineAIChat():
-    def get_response(self, model: str, user_prompt: str):
+    def get_response(self, model: Model, user_prompt: str):
         """ Get response from Ollama model.
         This method sends a request to the Ollama API with the user's prompt
         and retrieves the generated response.
@@ -64,7 +64,7 @@ class OfflineAIChat():
         url = "http://localhost:11434/api/generate"
         headers = {"Content-Type": "application/json"}
         payload = {
-            "model": model,
+            "model": model.name,
             "prompt": user_prompt,
             "stream": False
         }

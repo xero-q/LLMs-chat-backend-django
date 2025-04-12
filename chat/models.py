@@ -22,6 +22,11 @@ class Thread(models.Model):
     def __str__(self):
         return f"{self.id} - {self.title}"
 
+    @property
+    def first_prompt_datetime(self):
+        first_prompt = self.prompts.order_by('created_at').first()
+        return first_prompt.created_at if first_prompt else None
+
     @staticmethod
     def get_threads_ordered_by_first_prompt():
         first_prompt = Prompt.objects.filter(
