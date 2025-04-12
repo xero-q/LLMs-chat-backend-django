@@ -1,5 +1,11 @@
 from rest_framework import serializers
-from .models import Thread, Prompt
+from .models import Model, Thread, Prompt
+
+
+class ModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Model
+        fields = '__all__'
 
 
 class ThreadSerializer(serializers.ModelSerializer):

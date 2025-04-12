@@ -1,10 +1,23 @@
+from django.shortcuts import get_object_or_404
 from rest_framework.generics import ListAPIView
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Thread, Prompt, Model
-from .serializers import ThreadSerializer, PromptSerializer
+from .serializers import ModelSerializer, ThreadSerializer, PromptSerializer
 from .utils import OllamaChatAI
+
+
+class ModelListView(ListAPIView):
+    queryset = Model.objects.all()
+    serializer_class = ModelSerializer
+
+
+@api_view(['GET'])
+def get_model(request, model_id):
+    model = get_object_or_404(Model, pk=model_id)
+    serializer = ModelSerializer(model)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class ThreadListView(ListAPIView):
