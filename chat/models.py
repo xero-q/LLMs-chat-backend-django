@@ -14,7 +14,7 @@ class Thread(models.Model):
         Model, related_name='threads', on_delete=models.DO_NOTHING)
 
     def __str__(self):
-        return self.title
+        return f"{self.id} - {self.title}"
 
 
 class Prompt(models.Model):

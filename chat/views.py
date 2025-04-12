@@ -5,7 +5,11 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import Thread, Prompt, Model
 from .serializers import ModelSerializer, ThreadSerializer, PromptSerializer
-from .utils import OllamaChatAI
+from .utils import OpenAIChat
+from openai import OpenAI
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 class ModelListView(ListAPIView):
@@ -45,7 +49,12 @@ def get_response_for_prompt(request, thread_id):
     if not model:
         return Response({"error": "Model not found"}, status=status.HTTP_404_NOT_FOUND)
 
-    chatai = OllamaChatAI()
+    try:
+        client = OpenAI(base_url="https://api.deepinfra.com/v1/openai")
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    chatai = OpenAIChat(client)
     user_prompt = data.get('user_prompt')
     try:
         response = chatai.get_response(
