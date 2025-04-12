@@ -21,7 +21,7 @@ def get_model(request, model_id):
 
 
 class ThreadListView(ListAPIView):
-    queryset = Thread.objects.all()
+    queryset = Thread.get_threads_ordered_by_first_prompt()
     serializer_class = ThreadSerializer
 
 
@@ -79,8 +79,18 @@ def start_thread(request, model_id):
     try:
         thread = Thread.objects.create(model_id=model_id, title=title)
     except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": "There is already a thread with this title"}, status=status.HTTP_400_BAD_REQUEST)
 
     thread.save()
     serializer = ThreadSerializer(thread)
     return Response({"thread": serializer.data}, status=status.HTTP_201_CREATED)
+
+
+@api_view(['DELETE'])
+def delete_thread(request, thread_id):
+    try:
+        thread = Thread.objects.get(id=thread_id)
+    except Thread.DoesNotExist:
+        return Response({"error": "Thread not found"}, status=status.HTTP_404_NOT_FOUND)
+    thread.delete()
+    return Response({"message": "Thread deleted successfully"}, status=status.HTTP_204_NO_CONTENT)

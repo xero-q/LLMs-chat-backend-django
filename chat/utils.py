@@ -22,8 +22,7 @@ class OnlineAIChat():
             # Devuelve el contenido del mensaje de respuesta
             return response.choices[0].message.content
         except Exception as e:
-            print(e)
-            raise Exception("Error getting response from AI API")
+            raise Exception(f"Error getting response from AI API.\n{e}")
 
 
 class OfflineAIChat():

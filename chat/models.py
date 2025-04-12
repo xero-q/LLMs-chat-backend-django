@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import OuterRef, Subquery, DateTimeField
 
 
 class Model(models.Model):
@@ -16,6 +17,19 @@ class Thread(models.Model):
 
     def __str__(self):
         return f"{self.id} - {self.title}"
+
+    @staticmethod
+    def get_threads_ordered_by_first_prompt():
+        first_prompt = Prompt.objects.filter(
+            thread=OuterRef('pk')
+        ).order_by('created_at')
+
+        return Thread.objects.annotate(
+            first_prompt_date=Subquery(
+                first_prompt.values('created_at')[:1],
+                output_field=DateTimeField()
+            )
+        ).order_by('-first_prompt_date')
 
 
 class Prompt(models.Model):
