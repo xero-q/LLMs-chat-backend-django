@@ -5,11 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import Thread, Prompt, Model
 from .serializers import ModelSerializer, ThreadSerializer, PromptSerializer
-from .utils import OpenAIChat
-from openai import OpenAI
-from dotenv import load_dotenv
-
-load_dotenv()
+from .utils import OnlineAIChat, OfflineAIChat
 
 
 class ModelListView(ListAPIView):
@@ -49,15 +45,15 @@ def get_response_for_prompt(request, thread_id):
     if not model:
         return Response({"error": "Model not found"}, status=status.HTTP_404_NOT_FOUND)
 
-    try:
-        client = OpenAI(base_url="https://api.deepinfra.com/v1/openai")
-    except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    if model.is_online:
+        chat_ai = OnlineAIChat()
+    else:
+        chat_ai = OfflineAIChat()
 
-    chatai = OpenAIChat(client)
     user_prompt = data.get('user_prompt')
+
     try:
-        response = chatai.get_response(
+        response = chat_ai.get_response(
             model=model.name, user_prompt=user_prompt)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -71,3 +67,20 @@ def get_response_for_prompt(request, thread_id):
     prompt.save()
     # Return the response
     return Response({"response": response}, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+def start_thread(request, model_id):
+    data = request.data
+    title = data.get('title')
+    if not title:
+        return Response({"error": "Title is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        thread = Thread.objects.create(model_id=model_id, title=title)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    thread.save()
+    serializer = ThreadSerializer(thread)
+    return Response({"thread": serializer.data}, status=status.HTTP_201_CREATED)
