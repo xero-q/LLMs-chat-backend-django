@@ -53,4 +53,5 @@ class OfflineAIChat():
             data = response.json()
             return data.get("response")
         else:
-            raise Exception("Error getting response from AI API")
+            raise Exception(
+                f"Error getting response from AI API.\nResponse status: {response.status_code}\nMessage: {response.text}")
