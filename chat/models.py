@@ -27,22 +27,6 @@ class Thread(models.Model):
     def __str__(self):
         return f"{self.id} - {self.title}"
 
-    @staticmethod
-    def get_threads_ordered_by_created_at():
-        # Aquí usamos solo el campo `created_at` para ordenar
-        threads = Thread.objects.all().annotate(
-            # Extraemos solo la fecha de `created_at`
-            created_at_date=TruncDate('created_at')
-            # Ordenamos por fecha de creación en orden descendente
-        ).order_by('-created_at_date')
-
-        # Agrupamos por fecha de creación usando defaultdict
-        grouped = defaultdict(list)
-        for thread in threads:
-            grouped[thread.created_at_date].append(thread)
-
-        return grouped
-
 
 class Prompt(models.Model):
     prompt = models.TextField()

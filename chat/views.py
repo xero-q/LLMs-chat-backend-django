@@ -29,13 +29,11 @@ class ThreadListView(APIView):
             created_at_date=TruncDate('created_at')
         ).order_by('-created_at_date', '-created_at')
 
-        # Agrupar por la fecha anotada
         grouped = defaultdict(list)
         for thread in threads:
             serialized = ThreadSerializer(thread).data
             grouped[thread.created_at_date].append(serialized)
 
-        # Convertir defaultdict a lista ordenada
         result = [
             {
                 "date": date,
