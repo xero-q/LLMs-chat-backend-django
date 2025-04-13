@@ -3,6 +3,7 @@ from django.db.models import OuterRef, Subquery, DateTimeField
 from django.db.models.functions import TruncDate
 from collections import defaultdict
 import datetime
+from django.contrib.auth.models import User
 
 
 class Model(models.Model):
@@ -23,6 +24,9 @@ class Thread(models.Model):
         Model, related_name='threads', on_delete=models.CASCADE)
     created_at = models.DateTimeField(
         auto_now_add=True)
+    user = models.ForeignKey(
+        User, related_name='threads', on_delete=models.CASCADE
+    )
 
     def __str__(self):
         return f"{self.id} - {self.title}"

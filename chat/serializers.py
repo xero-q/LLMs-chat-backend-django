@@ -12,6 +12,7 @@ class ThreadSerializer(serializers.ModelSerializer):
     class Meta:
         model = Thread
         fields = '__all__'
+        read_only_fields = ['user', 'created_at']
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)

@@ -9,6 +9,7 @@ from .serializers import ModelSerializer, ThreadSerializer, PromptSerializer
 from .utils import OnlineAIChat, OfflineAIChat, OnlineHFChat
 from collections import defaultdict
 from django.db.models.functions import TruncDate
+from rest_framework.permissions import IsAuthenticated
 
 
 class ModelListView(ListAPIView):
@@ -24,8 +25,10 @@ def get_model(request, model_id):
 
 
 class ThreadListView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request):
-        threads = Thread.objects.all().annotate(
+        threads = Thread.objects.filter(user=request.user).annotate(
             created_at_date=TruncDate('created_at')
         ).order_by('-created_at_date', '-created_at')
 
@@ -100,7 +103,8 @@ def start_thread(request, model_id):
         return Response({"error": "Title is required"}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        thread = Thread.objects.create(model_id=model_id, title=title)
+        thread = Thread.objects.create(
+            model_id=model_id, title=title, user=request.user)
     except Exception as e:
         return Response({"error": "There is already a thread with this title"}, status=status.HTTP_400_BAD_REQUEST)
 
