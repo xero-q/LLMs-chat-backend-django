@@ -15,8 +15,6 @@ class ThreadSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)
-        if hasattr(instance, 'first_prompt_datetime'):
-            ret["first_prompt_datetime"] = instance.first_prompt_datetime
         ret['model_name'] = instance.model.name
         ret['is_online'] = instance.model.is_online
         return ret

@@ -1,11 +1,14 @@
 from django.shortcuts import get_object_or_404
 from rest_framework.generics import ListAPIView
+from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Thread, Prompt, Model
 from .serializers import ModelSerializer, ThreadSerializer, PromptSerializer
 from .utils import OnlineAIChat, OfflineAIChat, OnlineHFChat
+from collections import defaultdict
+from django.db.models.functions import TruncDate
 
 
 class ModelListView(ListAPIView):
@@ -20,9 +23,28 @@ def get_model(request, model_id):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class ThreadListView(ListAPIView):
-    queryset = Thread.get_threads_ordered_by_first_prompt()
-    serializer_class = ThreadSerializer
+class ThreadListView(APIView):
+    def get(self, request):
+        threads = Thread.objects.all().annotate(
+            created_at_date=TruncDate('created_at')
+        ).order_by('-created_at_date', '-created_at')
+
+        # Agrupar por la fecha anotada
+        grouped = defaultdict(list)
+        for thread in threads:
+            serialized = ThreadSerializer(thread).data
+            grouped[thread.created_at_date].append(serialized)
+
+        # Convertir defaultdict a lista ordenada
+        result = [
+            {
+                "date": date,
+                "threads": threads
+            }
+            for date, threads in grouped.items()
+        ]
+
+        return Response(result)
 
 
 @api_view(['GET'])
