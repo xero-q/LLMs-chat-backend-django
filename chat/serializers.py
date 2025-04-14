@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Model, Thread, Prompt
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 
 class ModelSerializer(serializers.ModelSerializer):
@@ -25,3 +26,9 @@ class PromptSerializer(serializers.ModelSerializer):
     class Meta:
         model = Prompt
         fields = ['prompt', 'response', 'created_at']
+
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    default_error_messages = {
+        "no_active_account": ("The username or password is incorrect.")
+    }

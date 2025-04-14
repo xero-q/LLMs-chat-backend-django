@@ -5,13 +5,14 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Thread, Prompt, Model
-from .serializers import ModelSerializer, ThreadSerializer, PromptSerializer
+from .serializers import CustomTokenObtainPairSerializer, ModelSerializer, ThreadSerializer, PromptSerializer
 from .utils import OnlineAIChat, OfflineAIChat, OnlineHFChat
 from collections import defaultdict
 from django.db.models.functions import TruncDate
 from rest_framework.permissions import IsAuthenticated
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from dj_rest_auth.registration.views import SocialLoginView
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 
 class ModelListView(ListAPIView):
@@ -127,3 +128,7 @@ def delete_thread(request, thread_id):
 
 class GoogleLogin(SocialLoginView):
     adapter_class = GoogleOAuth2Adapter
+
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer

@@ -22,13 +22,14 @@ from rest_framework_simplejwt.views import (
 )
 
 from chat.google_login import google_login_redirect
-from chat.views import GoogleLogin
+from chat.views import CustomTokenObtainPairView, GoogleLogin
 
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path('api/', include('chat.urls')),
-    path('api/auth/login', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/auth/login', CustomTokenObtainPairView.as_view(),
+         name='token_obtain_pair'),
     path('api/auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('auth/login', include('dj_rest_auth.urls')),
     path('auth/social/', include('allauth.socialaccount.urls')),
