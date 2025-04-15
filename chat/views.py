@@ -28,10 +28,10 @@ def get_model(request, model_id):
 
 
 class ThreadListView(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        threads = Thread.objects.all().annotate(
+        threads = Thread.objects.filter(user=request.user).annotate(
             created_at_date=TruncDate('created_at')
         ).order_by('-created_at_date', '-created_at')
 
