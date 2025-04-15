@@ -30,7 +30,7 @@ urlpatterns = [
     path('api/', include('chat.urls')),
     path('api/auth/login', CustomTokenObtainPairView.as_view(),
          name='token_obtain_pair'),
-    path('api/auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/auth/refresh', TokenRefreshView.as_view(), name='token_refresh'),
     path('auth/login', include('dj_rest_auth.urls')),
     path('auth/social/', include('allauth.socialaccount.urls')),
     path('auth/social/google/', GoogleLogin.as_view(), name='google_login'),

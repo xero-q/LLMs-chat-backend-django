@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404
 from rest_framework.generics import ListAPIView
 from rest_framework.views import APIView
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Thread, Prompt, Model
@@ -52,6 +52,7 @@ class ThreadListView(APIView):
 
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def get_prompts_for_thread(request, thread_id):
     prompts = Prompt.get_prompts_by_thread(thread_id)
     serializer = PromptSerializer(prompts, many=True)
@@ -59,6 +60,7 @@ def get_prompts_for_thread(request, thread_id):
 
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def get_response_for_prompt(request, thread_id):
     data = request.data
 
@@ -99,6 +101,7 @@ def get_response_for_prompt(request, thread_id):
 
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def start_thread(request, model_id):
     data = request.data
     title = data.get('title')
@@ -117,6 +120,7 @@ def start_thread(request, model_id):
 
 
 @api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
 def delete_thread(request, thread_id):
     try:
         thread = Thread.objects.get(id=thread_id)
