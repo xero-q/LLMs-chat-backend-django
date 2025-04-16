@@ -1,13 +1,27 @@
 import requests
 from openai import OpenAI
+import google.generativeai as genai
 from dotenv import load_dotenv
-from .models import Model
+from .models import Model, ModelType
 import os
 
 load_dotenv()
 
 
-class OnlineHFChat():
+class AIChatFactory():
+    def __init__(self, model_type):
+        self._model_type = model_type
+
+    def get_model(self):
+        match self._model_type:
+            case ModelType.local: return OllamaAIChat()
+            case ModelType.openai: return OpenAIChat()
+            case ModelType.huggingface: return HuggingFaceAIChat()
+            case ModelType.gemini: return GeminiAIChat()
+            case _: return OllamaAIChat()
+
+
+class HuggingFaceAIChat():
     def get_response(self, model: Model, user_prompt: str):
         api_key = os.getenv(model.api_environment_variable)
         base_url = model.base_url
@@ -27,7 +41,7 @@ class OnlineHFChat():
                 f"Error getting response from AI API.\nResponse status: {response.status_code}\nMessage: {response.text}")
 
 
-class OnlineAIChat():
+class OpenAIChat():
     def get_response(self, model: Model, user_prompt: str):
         try:
             api_key = os.getenv(model.api_environment_variable)
@@ -48,7 +62,7 @@ class OnlineAIChat():
             raise Exception(f"Error getting response from AI API.\n{e}")
 
 
-class OfflineAIChat():
+class OllamaAIChat():
     def get_response(self, model: Model, user_prompt: str):
         """ Get response from Ollama model.
         This method sends a request to the Ollama API with the user's prompt
@@ -77,3 +91,27 @@ class OfflineAIChat():
         else:
             raise Exception(
                 f"Error getting response from AI API.\nResponse status: {response.status_code}\nMessage: {response.text}")
+
+
+class GeminiAIChat():
+    def get_response(self, model: Model, user_prompt: str):
+        """ Get response from Gemini model.
+        This method sends a request to the Gemini API with the user's prompt
+        and retrieves the generated response.
+        It uses the Mistral model for generating responses.
+        """
+        try:
+            api_key = os.getenv(model.api_environment_variable)
+            genai.configure(api_key=api_key)
+            model = genai.GenerativeModel(model.name)
+        except Exception as e:
+            raise Exception(f"Error creating Gemini client.\n{e}")
+
+        try:
+            chat = model.start_chat()
+
+            chat_response = chat.send_message(user_prompt)
+            return chat_response.text
+
+        except Exception as e:
+            raise Exception(f"Error getting response from AI API.\n{e}")

@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import Thread, Prompt, Model
 from .serializers import CustomTokenObtainPairSerializer, ModelSerializer, ThreadSerializer, PromptSerializer
-from .utils import OnlineAIChat, OfflineAIChat, OnlineHFChat
+from .utils import HuggingFaceAIChat, OpenAIChat, OllamaAIChat, AIChatFactory
 from collections import defaultdict
 from django.db.models.functions import TruncDate
 from rest_framework.permissions import IsAuthenticated
@@ -73,18 +73,13 @@ def get_response_for_prompt(request, thread_id):
     if not model:
         return Response({"error": "Model not found"}, status=status.HTTP_404_NOT_FOUND)
 
-    if model.is_online:
-        if model.is_openai:
-            chat_ai = OnlineAIChat()
-        else:
-            chat_ai = OnlineHFChat()
-    else:
-        chat_ai = OfflineAIChat()
+    aichat_factory = AIChatFactory(model.model_type)
+    aichat_model = aichat_factory.get_model()
 
     user_prompt = data.get('user_prompt')
 
     try:
-        response = chat_ai.get_response(
+        response = aichat_model.get_response(
             model=model, user_prompt=user_prompt)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
