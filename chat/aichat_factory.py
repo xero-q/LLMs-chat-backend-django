@@ -2,27 +2,45 @@ import requests
 from openai import OpenAI
 import google.generativeai as genai
 from dotenv import load_dotenv
-from .models import Model, ModelType
+from .models import Model
 import os
+from abc import ABC
 
 load_dotenv()
 
 
-class AIChatFactory():
-    def __init__(self, model_type):
-        self._model_type = model_type
-
-    def get_model(self):
-        match self._model_type:
-            case ModelType.local: return OllamaAIChat()
-            case ModelType.openai: return OpenAIChat()
-            case ModelType.huggingface: return HuggingFaceAIChat()
-            case ModelType.gemini: return GeminiAIChat()
-            case _: return OllamaAIChat()
+class AIChat(ABC):
+    def get_response(self, model: Model, user_prompt: str) -> str:
+        pass
 
 
-class HuggingFaceAIChat():
-    def get_response(self, model: Model, user_prompt: str):
+class AIChatCreator(ABC):
+    def create_ai_chat() -> AIChat:
+        pass
+
+
+class OllamaChatCreator(AIChatCreator):
+    def create_ai_chat(self):
+        return OllamaAIChat()
+
+
+class OpenAIChatCreator(AIChatCreator):
+    def create_ai_chat(self):
+        return OpenAIChat()
+
+
+class GeminiAIChatCreator(AIChatCreator):
+    def create_ai_chat(self):
+        return GeminiAIChat()
+
+
+class HuggingFaceAIChatCreator(AIChatCreator):
+    def create_ai_chat(self):
+        return HuggingFaceAIChat()
+
+
+class HuggingFaceAIChat(AIChat):
+    def get_response(self, model: Model, user_prompt: str) -> str:
         api_key = os.getenv(model.api_environment_variable)
         base_url = model.base_url
         headers = {"Authorization": f"Bearer {api_key}"}
@@ -41,8 +59,8 @@ class HuggingFaceAIChat():
                 f"Error getting response from AI API.\nResponse status: {response.status_code}\nMessage: {response.text}")
 
 
-class OpenAIChat():
-    def get_response(self, model: Model, user_prompt: str):
+class OpenAIChat(AIChat):
+    def get_response(self, model: Model, user_prompt: str) -> str:
         try:
             api_key = os.getenv(model.api_environment_variable)
             client = OpenAI(api_key=api_key, base_url=model.base_url)
@@ -62,8 +80,8 @@ class OpenAIChat():
             raise Exception(f"Error getting response from AI API.\n{e}")
 
 
-class OllamaAIChat():
-    def get_response(self, model: Model, user_prompt: str):
+class OllamaAIChat(AIChat):
+    def get_response(self, model: Model, user_prompt: str) -> str:
         """ Get response from Ollama model.
         This method sends a request to the Ollama API with the user's prompt
         and retrieves the generated response.
@@ -93,8 +111,8 @@ class OllamaAIChat():
                 f"Error getting response from AI API.\nResponse status: {response.status_code}\nMessage: {response.text}")
 
 
-class GeminiAIChat():
-    def get_response(self, model: Model, user_prompt: str):
+class GeminiAIChat(AIChat):
+    def get_response(self, model: Model, user_prompt: str) -> str:
         """ Get response from Gemini model.
         This method sends a request to the Gemini API with the user's prompt
         and retrieves the generated response.
