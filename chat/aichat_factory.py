@@ -17,6 +17,15 @@ load_dotenv()
 class AIChat(ABC):
     def get_response(self, model: Model, user_prompt: str) -> str:
         pass
+        """ Get response from AI model.
+        This method gets the response for the corresponding user's prompt using the data of the model
+        Each descendant implementes the method of a different kind of model
+        Args:
+            user_prompt (str): The user's input prompt.
+
+        Returns:
+            str: The AI's response.
+        """
 
 
 class LangChainModel():
@@ -142,12 +151,6 @@ class AnthropicAIChat(AIChat):
 
 class MistralAIChat(AIChat):
     def get_response(self, model: Model, user_prompt: str) -> str:
-        """ Get response from Mistral model.
-        This method sends a request to the Mistral API with the user's prompt
-        and retrieves the generated response.
-        It uses the Mistral model for generating responses.
-        """
-
         try:
             client = OpenAI(
                 api_key=os.getenv(model.api_environment_variable),
@@ -173,17 +176,6 @@ class MistralAIChat(AIChat):
 
 class OllamaAIChat(AIChat):
     def get_response(self, model: Model, user_prompt: str) -> str:
-        """ Get response from Ollama model.
-        This method sends a request to the Ollama API with the user's prompt
-        and retrieves the generated response.
-        It uses the Mistral model for generating responses.
-
-        Args:
-            user_prompt (str): The user's input prompt.
-
-        Returns:
-            str: The AI's response.
-        """
         url = "http://localhost:11434/api/generate"
         headers = {"Content-Type": "application/json"}
         payload = {
@@ -204,11 +196,6 @@ class OllamaAIChat(AIChat):
 
 class GeminiAIChat(AIChat):
     def get_response(self, model: Model, user_prompt: str) -> str:
-        """ Get response from Gemini model.
-        This method sends a request to the Gemini API with the user's prompt
-        and retrieves the generated response.
-        It uses the Mistral model for generating responses.
-        """
         try:
             provider = ChatGoogleGenerativeAI(model=model.name,
                                               temperature=model.temperature,
