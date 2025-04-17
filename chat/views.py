@@ -13,6 +13,7 @@ from rest_framework.permissions import IsAuthenticated
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from dj_rest_auth.registration.views import SocialLoginView
 from rest_framework_simplejwt.views import TokenObtainPairView
+from datetime import datetime
 
 
 class ModelListView(ListAPIView):
@@ -42,7 +43,7 @@ class ThreadListView(APIView):
 
         result = [
             {
-                "date": date,
+                "date": datetime.combine(date, datetime.min.time()),
                 "threads": threads
             }
             for date, threads in grouped.items()
