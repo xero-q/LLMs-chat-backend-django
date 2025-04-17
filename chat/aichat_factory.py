@@ -2,7 +2,7 @@ import requests
 from dotenv import load_dotenv
 from .models import Model
 import os
-from abc import ABC
+from abc import ABC, abstractmethod
 from openai import OpenAI
 from langchain.schema import HumanMessage
 from langchain.chat_models import ChatOpenAI
@@ -15,6 +15,7 @@ load_dotenv()
 
 
 class AIChat(ABC):
+    @abstractmethod
     def get_response(self, model: Model, user_prompt: str) -> str:
         pass
         """ Get response from AI model.
@@ -48,6 +49,7 @@ class LangChainModelSimple():
 
 
 class AIChatCreator(ABC):
+    @abstractmethod
     def create_ai_chat() -> AIChat:
         pass
 
