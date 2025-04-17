@@ -106,7 +106,9 @@ class DeepSeekAIChat(AIChat):
     def get_response(self, model: Model, user_prompt: str) -> str:
         try:
             provider = ChatDeepSeek(model=model.name,
-                                    temperature=model.temperature, api_key=os.getenv(model.api_environment_variable))
+                                    temperature=model.temperature,
+                                    api_base=model.base_url,
+                                    api_key=os.getenv(model.api_environment_variable))
             model = LangChainModelSimple(provider)
         except Exception as e:
             raise Exception(f"Error creating OpenAI client.\n{e}")
