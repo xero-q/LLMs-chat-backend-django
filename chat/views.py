@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import ModelType, Thread, Prompt, Model
 from .serializers import CustomTokenObtainPairSerializer, ModelSerializer, ThreadSerializer, PromptSerializer
-from .aichat_factory import OllamaChatCreator, OpenAIChatCreator, GeminiAIChatCreator, HuggingFaceAIChatCreator, AnthropicAIChatCreator
+from .aichat_factory import DeepSeekAIChatCreator, OllamaChatCreator, OpenAIChatCreator, GeminiAIChatCreator, HuggingFaceAIChatCreator, AnthropicAIChatCreator
 from collections import defaultdict
 from django.db.models.functions import TruncDate
 from rest_framework.permissions import IsAuthenticated
@@ -80,6 +80,7 @@ def get_response_for_prompt(request, thread_id):
         case "huggingface": aichat_creator = HuggingFaceAIChatCreator()
         case "gemini": aichat_creator = GeminiAIChatCreator()
         case "anthropic": aichat_creator = AnthropicAIChatCreator()
+        case "deepseek": aichat_creator = DeepSeekAIChatCreator()
 
     aichat_model = aichat_creator.create_ai_chat()
 

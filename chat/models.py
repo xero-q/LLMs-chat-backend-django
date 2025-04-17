@@ -20,6 +20,7 @@ class Model(models.Model):
     )
     api_environment_variable = models.CharField(
         max_length=255, blank=True, null=True)
+    temperature = models.FloatField(default=0.7)
 
     def __str__(self):
         return f"{self.name} - ({self.type.name})"
