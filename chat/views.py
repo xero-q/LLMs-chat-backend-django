@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import ModelType, Thread, Prompt, Model
 from .serializers import CustomTokenObtainPairSerializer, ModelSerializer, ThreadSerializer, PromptSerializer
-from .aichat_factory import OllamaChatCreator, OpenAIChatCreator, GeminiAIChatCreator, HuggingFaceAIChatCreator
+from .aichat_factory import OllamaChatCreator, OpenAIChatCreator, GeminiAIChatCreator, HuggingFaceAIChatCreator, AnthropicAIChatCreator
 from collections import defaultdict
 from django.db.models.functions import TruncDate
 from rest_framework.permissions import IsAuthenticated
@@ -74,11 +74,12 @@ def get_response_for_prompt(request, thread_id):
     if not model:
         return Response({"error": "Model not found"}, status=status.HTTP_404_NOT_FOUND)
 
-    match model.model_type:
-        case ModelType.local: aichat_creator = OllamaChatCreator()
-        case ModelType.openai: aichat_creator = OpenAIChatCreator()
-        case ModelType.huggingface: aichat_creator = HuggingFaceAIChatCreator()
-        case ModelType.gemini: aichat_creator = GeminiAIChatCreator()
+    match model.type.name:
+        case "local": aichat_creator = OllamaChatCreator()
+        case "openai": aichat_creator = OpenAIChatCreator()
+        case "huggingface": aichat_creator = HuggingFaceAIChatCreator()
+        case "gemini": aichat_creator = GeminiAIChatCreator()
+        case "anthropic": aichat_creator = AnthropicAIChatCreator()
 
     aichat_model = aichat_creator.create_ai_chat()
 

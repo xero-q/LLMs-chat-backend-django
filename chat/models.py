@@ -5,22 +5,24 @@ from collections import defaultdict
 from django.contrib.auth.models import User
 
 
-class ModelType(models.TextChoices):
-    openai = "openai"
-    huggingface = "huggingface"
-    gemini = "gemini"
-    local = "local"
+class ModelType(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+
+    def __str__(self):
+        return self.name
 
 
 class Model(models.Model):
     name = models.CharField(max_length=255, unique=True)
     base_url = models.CharField(max_length=255, blank=True, null=True)
-    model_type = models.CharField(max_length=255, choices=ModelType.choices)
+    type = models.ForeignKey(
+        ModelType, related_name='models', on_delete=models.CASCADE
+    )
     api_environment_variable = models.CharField(
         max_length=255, blank=True, null=True)
 
     def __str__(self):
-        return f"{self.name} - {"Online" if self.model_type != ModelType.local else "Offline"}"
+        return f"{self.name} - ({self.type.name})"
 
 
 class Thread(models.Model):

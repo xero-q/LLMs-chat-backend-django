@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from .models import Model
 import os
 from abc import ABC
+import anthropic
 
 load_dotenv()
 
@@ -37,6 +38,11 @@ class GeminiAIChatCreator(AIChatCreator):
 class HuggingFaceAIChatCreator(AIChatCreator):
     def create_ai_chat(self):
         return HuggingFaceAIChat()
+
+
+class AnthropicAIChatCreator(AIChatCreator):
+    def create_ai_chat(self):
+        return AnthropicAIChat()
 
 
 class HuggingFaceAIChat(AIChat):
@@ -78,6 +84,29 @@ class OpenAIChat(AIChat):
             return response.choices[0].message.content
         except Exception as e:
             raise Exception(f"Error getting response from AI API.\n{e}")
+
+
+class AnthropicAIChat(AIChat):
+    def get_response(self, model: Model, user_prompt: str) -> str:
+        try:
+            api_key = os.getenv(model.api_environment_variable)
+            client = anthropic.Anthropic(api_key=api_key)
+
+        except Exception as e:
+            raise Exception(f"Error creating Anthropic client.\n{e}")
+
+        try:
+            response = client.messages.create(
+                model=model.name,
+                max_tokens=1024,
+                temperature=0.7,
+                messages=[
+                    {"role": "user", "content": user_prompt}
+                ]
+            )
+            return response.content[0].text
+        except Exception as e:
+            raise Exception(f"Error getting response from Anthropic API.\n{e}")
 
 
 class OllamaAIChat(AIChat):

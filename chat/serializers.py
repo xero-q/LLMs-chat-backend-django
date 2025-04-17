@@ -10,7 +10,7 @@ class ModelSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)
-        ret['is_online'] = instance.model_type != ModelType.local
+        ret['model_type'] = instance.type.name
         return ret
 
 
@@ -23,7 +23,7 @@ class ThreadSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         ret = super().to_representation(instance)
         ret['model_name'] = instance.model.name
-        ret['is_online'] = instance.model.model_type != ModelType.local
+        ret['model_type'] = instance.model.type.name
         return ret
 
 
