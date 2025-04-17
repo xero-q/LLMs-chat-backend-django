@@ -68,7 +68,7 @@ MIDDLEWARE = [
     "allauth.account.middleware.AccountMiddleware"
 ]
 
-ROOT_URLCONF = "ollamabackend.urls"
+ROOT_URLCONF = "llmsbackend.urls"
 
 TEMPLATES = [
     {
@@ -85,7 +85,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "ollamabackend.wsgi.application"
+WSGI_APPLICATION = "llmsbackend.wsgi.application"
 
 
 # Database
