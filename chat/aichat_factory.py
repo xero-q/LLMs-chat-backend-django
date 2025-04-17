@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 from .models import Model
 import os
 from abc import ABC
+from openai import OpenAI
 from langchain.schema import HumanMessage
 from langchain.chat_models import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -72,6 +73,11 @@ class DeepSeekAIChatCreator(AIChatCreator):
         return DeepSeekAIChat()
 
 
+class MistralAIChatCreator(AIChatCreator):
+    def create_ai_chat(self):
+        return MistralAIChat()
+
+
 class HuggingFaceAIChat(AIChat):
     def get_response(self, model: Model, user_prompt: str) -> str:
         try:
@@ -130,6 +136,37 @@ class AnthropicAIChat(AIChat):
 
         try:
             return model.get_response(user_prompt)
+        except Exception as e:
+            raise Exception(f"Error getting response from AI API.\n{e}")
+
+
+class MistralAIChat(AIChat):
+    def get_response(self, model: Model, user_prompt: str) -> str:
+        """ Get response from Mistral model.
+        This method sends a request to the Mistral API with the user's prompt
+        and retrieves the generated response.
+        It uses the Mistral model for generating responses.
+        """
+
+        try:
+            client = OpenAI(
+                api_key=os.getenv(model.api_environment_variable),
+                base_url=model.base_url
+            )
+
+        except Exception as e:
+            raise Exception(f"Error creating OpenAI client.\n{e}")
+
+        try:
+            response = client.chat.completions.create(
+                model=model.name,
+                temperature=model.temperature,
+                messages=[
+                    {"role": "user", "content": user_prompt}
+                ]
+            )
+
+            return response.choices[0].message.content
         except Exception as e:
             raise Exception(f"Error getting response from AI API.\n{e}")
 
