@@ -3,6 +3,7 @@ from django.db.models import OuterRef, Subquery, DateTimeField
 from django.db.models.functions import TruncDate
 from collections import defaultdict
 from django.contrib.auth.models import User
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 class ModelType(models.Model):
@@ -20,7 +21,10 @@ class Model(models.Model):
     )
     api_environment_variable = models.CharField(
         max_length=255, blank=True, null=True)
-    temperature = models.FloatField(default=0.7)
+    temperature = models.FloatField(default=0.7, validators=[
+        MinValueValidator(0.0),
+        MaxValueValidator(1)
+    ])
 
     def __str__(self):
         return f"{self.name} - ({self.type.name})"
