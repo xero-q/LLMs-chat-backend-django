@@ -69,12 +69,7 @@ def get_response_for_prompt(request, thread_id):
     if not thread:
         return Response({"error": "Thread not found"}, status=status.HTTP_404_NOT_FOUND)
 
-    # Get corresponding model
-    model = Model.objects.get(id=thread.model_id)
-    if not model:
-        return Response({"error": "Model not found"}, status=status.HTTP_404_NOT_FOUND)
-
-    match model.type.name:
+    match thread.model.type.name:
         case "local": aichat_creator = OllamaChatCreator()
         case "openai": aichat_creator = OpenAIChatCreator()
         case "huggingface": aichat_creator = HuggingFaceAIChatCreator()
@@ -83,7 +78,7 @@ def get_response_for_prompt(request, thread_id):
         case "deepseek": aichat_creator = DeepSeekAIChatCreator()
         case "mistral": aichat_creator = MistralAIChatCreator()
 
-    aichat_model = aichat_creator.create_ai_chat(model, thread_id)
+    aichat_model = aichat_creator.create_ai_chat(thread)
 
     user_prompt = data.get('user_prompt')
 

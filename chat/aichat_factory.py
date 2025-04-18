@@ -1,6 +1,6 @@
 import requests
 from dotenv import load_dotenv
-from .models import Model, Thread
+from .models import Thread
 import os
 from abc import ABC, abstractmethod
 from langchain.schema import HumanMessage
@@ -12,12 +12,12 @@ load_dotenv()
 
 
 class LangChainModel():
-    def __init__(self, model: Model, provider_name: str, thread_id):
+    def __init__(self, thread: Thread, provider_name: str):
         try:
+            model = thread.model
             self._chat_model = init_chat_model(model.name,
                                                model_provider=provider_name, api_key=os.getenv(model.api_environment_variable), temperature=model.temperature)
 
-            thread = Thread.objects.get(pk=thread_id)
             prompts = thread.prompts.all().order_by('created_at')
 
             self._messages = []
@@ -39,8 +39,8 @@ class LangChainModel():
 
 
 class AIChat():
-    def __init__(self, model: Model, provider: str, thread_id: int):
-        self._llm_model = LangChainModel(model, provider, thread_id)
+    def __init__(self, thread: Thread, provider: str):
+        self._llm_model = LangChainModel(thread, provider)
 
     def get_response(self, user_prompt: str) -> str:
         return self._llm_model.get_response(user_prompt)
@@ -48,48 +48,48 @@ class AIChat():
 
 class AIChatCreator(ABC):
     @abstractmethod
-    def create_ai_chat(self, model: Model, thread_id: int) -> AIChat:
+    def create_ai_chat(self, thread: Thread) -> AIChat:
         pass
 
 
 class OllamaChatCreator(AIChatCreator):
-    def create_ai_chat(self, model: Model, thread_id: int) -> AIChat:
-        return OllamaAIChat(model, thread_id)
+    def create_ai_chat(self, thread: Thread) -> AIChat:
+        return OllamaAIChat(thread)
 
 
 class OpenAIChatCreator(AIChatCreator):
-    def create_ai_chat(self, model: Model, thread_id: int) -> AIChat:
-        return AIChat(model, "openai", thread_id)
+    def create_ai_chat(self, thread: Thread) -> AIChat:
+        return AIChat(thread, "openai")
 
 
 class GeminiAIChatCreator(AIChatCreator):
-    def create_ai_chat(self, model: Model, thread_id: int) -> AIChat:
-        return AIChat(model, "google_genai", thread_id)
+    def create_ai_chat(self, thread: Thread) -> AIChat:
+        return AIChat(thread, "google_genai")
 
 
 class HuggingFaceAIChatCreator(AIChatCreator):
-    def create_ai_chat(self, model: Model, thread_id: int) -> AIChat:
-        return AIChat(model, "huggingface", thread_id)
+    def create_ai_chat(self, thread: Thread) -> AIChat:
+        return AIChat(thread, "huggingface")
 
 
 class AnthropicAIChatCreator(AIChatCreator):
-    def create_ai_chat(self, model: Model, thread_id: int) -> AIChat:
-        return AIChat(model, "anthropic", thread_id)
+    def create_ai_chat(self, thread: Thread) -> AIChat:
+        return AIChat(thread, "anthropic")
 
 
 class DeepSeekAIChatCreator(AIChatCreator):
-    def create_ai_chat(self, model: Model, thread_id: int) -> AIChat:
-        return AIChat(model, "deepseek", thread_id)
+    def create_ai_chat(self, thread: Thread) -> AIChat:
+        return AIChat(thread, "deepseek")
 
 
 class MistralAIChatCreator(AIChatCreator):
-    def create_ai_chat(self, model: Model, thread_id: int) -> AIChat:
-        return AIChat(model, "mistralai", thread_id)
+    def create_ai_chat(self, thread: Thread) -> AIChat:
+        return AIChat(thread, "mistralai")
 
 
 class OllamaAIChat(AIChat):
-    def __init__(self, model: Model):
-        self._model = model
+    def __init__(self, thread: Thread):
+        self._model = thread.model
 
     def get_response(self, user_prompt: str) -> str:
         url = "http://localhost:11434/api/generate"
