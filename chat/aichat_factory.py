@@ -3,13 +3,9 @@ from dotenv import load_dotenv
 from .models import Model
 import os
 from abc import ABC, abstractmethod
-from openai import OpenAI
 from langchain.schema import HumanMessage
-from langchain.chat_models import ChatOpenAI
-from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain.llms import HuggingFaceHub
-from langchain_anthropic import ChatAnthropic
-from langchain_deepseek import ChatDeepSeek
+from langchain.chat_models import init_chat_model
+from langchain_core.messages import HumanMessage
 
 load_dotenv()
 
@@ -30,22 +26,20 @@ class AIChat(ABC):
 
 
 class LangChainModel():
-    def __init__(self, provider):
-        self._provider = provider
+    def __init__(self, model: Model, provider_name: str):
+        try:
+            self._model = init_chat_model(model.name,
+                                          model_provider=provider_name, api_key=os.getenv(model.api_environment_variable), temperature=model.temperature)
+        except Exception as e:
+            raise Exception(f"Error creating LangChain model\n{e}")
 
-    def get_response(self, user_prompt) -> str:
-        messages = [HumanMessage(content=user_prompt)]
-        response = self._provider(messages)
+    def get_response(self, user_prompt: str) -> str:
+        try:
+            response = self._model.invoke([HumanMessage(content=user_prompt)])
 
-        return response.content if hasattr(response, 'content') else response
-
-
-class LangChainModelSimple():
-    def __init__(self, provider):
-        self._provider = provider
-
-    def get_response(self, user_prompt) -> str:
-        return self._provider.invoke(user_prompt)
+            return response.content
+        except Exception as e:
+            raise Exception(f"Error getting response from AI API.\n{e}")
 
 
 class AIChatCreator(ABC):
@@ -91,89 +85,38 @@ class MistralAIChatCreator(AIChatCreator):
 
 class HuggingFaceAIChat(AIChat):
     def get_response(self, model: Model, user_prompt: str) -> str:
-        try:
-            provider = HuggingFaceHub(repo_id=model.name, model_kwargs={"temperature": model.temperature},
-                                      huggingfacehub_api_token=os.getenv(model.api_environment_variable))
-            model = LangChainModelSimple(provider)
-        except Exception as e:
-            raise Exception(f"Error creating OpenAI client.\n{e}")
-
-        try:
-            return model.get_response(user_prompt)
-        except Exception as e:
-            raise Exception(f"Error getting response from AI API.\n{e}")
+        model = LangChainModel(model, "huggingface")
+        return model.get_response(user_prompt)
 
 
 class OpenAIChat(AIChat):
     def get_response(self, model: Model, user_prompt: str) -> str:
-        try:
-            provider = ChatOpenAI(model_name=model.name,
-                                  temperature=model.temperature, openai_api_key=os.getenv(model.api_environment_variable))
-            model = LangChainModel(provider)
-        except Exception as e:
-            raise Exception(f"Error creating OpenAI client.\n{e}")
-
-        try:
-            return model.get_response(user_prompt)
-        except Exception as e:
-            raise Exception(f"Error getting response from AI API.\n{e}")
+        model = LangChainModel(model, "openai")
+        return model.get_response(user_prompt)
 
 
 class DeepSeekAIChat(AIChat):
     def get_response(self, model: Model, user_prompt: str) -> str:
-        try:
-            provider = ChatDeepSeek(model=model.name,
-                                    temperature=model.temperature,
-                                    api_base=model.base_url,
-                                    api_key=os.getenv(model.api_environment_variable))
-            model = LangChainModelSimple(provider)
-        except Exception as e:
-            raise Exception(f"Error creating OpenAI client.\n{e}")
-
-        try:
-            return model.get_response(user_prompt)
-        except Exception as e:
-            raise Exception(f"Error getting response from AI API.\n{e}")
+        model = LangChainModel(model, "deepseek")
+        return model.get_response(user_prompt)
 
 
 class AnthropicAIChat(AIChat):
     def get_response(self, model: Model, user_prompt: str) -> str:
-        try:
-            provider = ChatAnthropic(model=model.name,
-                                     temperature=model.temperature, anthropic_api_key=os.getenv(model.api_environment_variable))
-            model = LangChainModelSimple(provider)
-        except Exception as e:
-            raise Exception(f"Error creating OpenAI client.\n{e}")
-
-        try:
-            return model.get_response(user_prompt)
-        except Exception as e:
-            raise Exception(f"Error getting response from AI API.\n{e}")
+        model = LangChainModel(model, "anthropic")
+        return model.get_response(user_prompt)
 
 
 class MistralAIChat(AIChat):
     def get_response(self, model: Model, user_prompt: str) -> str:
-        try:
-            client = OpenAI(
-                api_key=os.getenv(model.api_environment_variable),
-                base_url=model.base_url
-            )
+        model = LangChainModel(model, "mistralai")
+        return model.get_response(user_prompt)
 
-        except Exception as e:
-            raise Exception(f"Error creating OpenAI client.\n{e}")
 
-        try:
-            response = client.chat.completions.create(
-                model=model.name,
-                temperature=model.temperature,
-                messages=[
-                    {"role": "user", "content": user_prompt}
-                ]
-            )
-
-            return response.choices[0].message.content
-        except Exception as e:
-            raise Exception(f"Error getting response from AI API.\n{e}")
+class GeminiAIChat(AIChat):
+    def get_response(self, model: Model, user_prompt: str) -> str:
+        model = LangChainModel(model, "google_genai")
+        return model.get_response(user_prompt)
 
 
 class OllamaAIChat(AIChat):
@@ -194,22 +137,3 @@ class OllamaAIChat(AIChat):
         else:
             raise Exception(
                 f"Error getting response from AI API.\nResponse status: {response.status_code}\nMessage: {response.text}")
-
-
-class GeminiAIChat(AIChat):
-    def get_response(self, model: Model, user_prompt: str) -> str:
-        try:
-            provider = ChatGoogleGenerativeAI(model=model.name,
-                                              temperature=model.temperature,
-                                              google_api_key=os.getenv(
-                                                  model.api_environment_variable),
-                                              convert_system_message_to_human=True
-                                              )
-            model = LangChainModel(provider)
-        except Exception as e:
-            raise Exception(f"Error creating Gemini client.\n{e}")
-
-        try:
-            return model.get_response(user_prompt)
-        except Exception as e:
-            raise Exception(f"Error getting response from AI API.\n{e}")
