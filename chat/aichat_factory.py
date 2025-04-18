@@ -1,130 +1,101 @@
 import requests
 from dotenv import load_dotenv
-from .models import Model
+from .models import Model, Thread
 import os
 from abc import ABC, abstractmethod
 from langchain.schema import HumanMessage
 from langchain.chat_models import init_chat_model
 from langchain_core.messages import HumanMessage
+from langchain_core.messages import AIMessage
 
 load_dotenv()
 
 
-class AIChat(ABC):
-    @abstractmethod
-    def get_response(self, model: Model, user_prompt: str) -> str:
-        pass
-        """ Get response from AI model.
-        This method gets the response for the corresponding user's prompt using the data of the model
-        Each descendant implementes the method of a different kind of model
-        Args:
-            user_prompt (str): The user's input prompt.
-
-        Returns:
-            str: The AI's response.
-        """
-
-
 class LangChainModel():
-    def __init__(self, model: Model, provider_name: str):
+    def __init__(self, model: Model, provider_name: str, thread_id):
         try:
-            self._model = init_chat_model(model.name,
-                                          model_provider=provider_name, api_key=os.getenv(model.api_environment_variable), temperature=model.temperature)
+            self._chat_model = init_chat_model(model.name,
+                                               model_provider=provider_name, api_key=os.getenv(model.api_environment_variable), temperature=model.temperature)
+
+            thread = Thread.objects.get(pk=thread_id)
+            prompts = thread.prompts.all().order_by('created_at')
+
+            self._messages = []
+            for prompt in prompts:
+                self._messages.append(HumanMessage(content=prompt.prompt))
+                self._messages.append(AIMessage(content=prompt.response))
+
         except Exception as e:
             raise Exception(f"Error creating LangChain model\n{e}")
 
     def get_response(self, user_prompt: str) -> str:
         try:
-            response = self._model.invoke([HumanMessage(content=user_prompt)])
-
+            self._messages.append(HumanMessage(content=user_prompt))
+            response = self._chat_model.invoke(self._messages)
             return response.content
+
         except Exception as e:
             raise Exception(f"Error getting response from AI API.\n{e}")
 
 
+class AIChat():
+    def __init__(self, model: Model, provider: str, thread_id: int):
+        self._llm_model = LangChainModel(model, provider, thread_id)
+
+    def get_response(self, user_prompt: str) -> str:
+        return self._llm_model.get_response(user_prompt)
+
+
 class AIChatCreator(ABC):
     @abstractmethod
-    def create_ai_chat() -> AIChat:
+    def create_ai_chat(self, model: Model, thread_id: int) -> AIChat:
         pass
 
 
 class OllamaChatCreator(AIChatCreator):
-    def create_ai_chat(self):
-        return OllamaAIChat()
+    def create_ai_chat(self, model: Model, thread_id: int) -> AIChat:
+        return OllamaAIChat(model, thread_id)
 
 
 class OpenAIChatCreator(AIChatCreator):
-    def create_ai_chat(self):
-        return OpenAIChat()
+    def create_ai_chat(self, model: Model, thread_id: int) -> AIChat:
+        return AIChat(model, "openai", thread_id)
 
 
 class GeminiAIChatCreator(AIChatCreator):
-    def create_ai_chat(self):
-        return GeminiAIChat()
+    def create_ai_chat(self, model: Model, thread_id: int) -> AIChat:
+        return AIChat(model, "google_genai", thread_id)
 
 
 class HuggingFaceAIChatCreator(AIChatCreator):
-    def create_ai_chat(self):
-        return HuggingFaceAIChat()
+    def create_ai_chat(self, model: Model, thread_id: int) -> AIChat:
+        return AIChat(model, "huggingface", thread_id)
 
 
 class AnthropicAIChatCreator(AIChatCreator):
-    def create_ai_chat(self):
-        return AnthropicAIChat()
+    def create_ai_chat(self, model: Model, thread_id: int) -> AIChat:
+        return AIChat(model, "anthropic", thread_id)
 
 
 class DeepSeekAIChatCreator(AIChatCreator):
-    def create_ai_chat(self):
-        return DeepSeekAIChat()
+    def create_ai_chat(self, model: Model, thread_id: int) -> AIChat:
+        return AIChat(model, "deepseek", thread_id)
 
 
 class MistralAIChatCreator(AIChatCreator):
-    def create_ai_chat(self):
-        return MistralAIChat()
-
-
-class HuggingFaceAIChat(AIChat):
-    def get_response(self, model: Model, user_prompt: str) -> str:
-        model = LangChainModel(model, "huggingface")
-        return model.get_response(user_prompt)
-
-
-class OpenAIChat(AIChat):
-    def get_response(self, model: Model, user_prompt: str) -> str:
-        model = LangChainModel(model, "openai")
-        return model.get_response(user_prompt)
-
-
-class DeepSeekAIChat(AIChat):
-    def get_response(self, model: Model, user_prompt: str) -> str:
-        model = LangChainModel(model, "deepseek")
-        return model.get_response(user_prompt)
-
-
-class AnthropicAIChat(AIChat):
-    def get_response(self, model: Model, user_prompt: str) -> str:
-        model = LangChainModel(model, "anthropic")
-        return model.get_response(user_prompt)
-
-
-class MistralAIChat(AIChat):
-    def get_response(self, model: Model, user_prompt: str) -> str:
-        model = LangChainModel(model, "mistralai")
-        return model.get_response(user_prompt)
-
-
-class GeminiAIChat(AIChat):
-    def get_response(self, model: Model, user_prompt: str) -> str:
-        model = LangChainModel(model, "google_genai")
-        return model.get_response(user_prompt)
+    def create_ai_chat(self, model: Model, thread_id: int) -> AIChat:
+        return AIChat(model, "mistralai", thread_id)
 
 
 class OllamaAIChat(AIChat):
-    def get_response(self, model: Model, user_prompt: str) -> str:
+    def __init__(self, model: Model):
+        self._model = model
+
+    def get_response(self, user_prompt: str) -> str:
         url = "http://localhost:11434/api/generate"
         headers = {"Content-Type": "application/json"}
         payload = {
-            "model": model.name,
+            "model": self._model.name,
             "prompt": user_prompt,
             "stream": False
         }

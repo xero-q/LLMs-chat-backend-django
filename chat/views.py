@@ -83,13 +83,12 @@ def get_response_for_prompt(request, thread_id):
         case "deepseek": aichat_creator = DeepSeekAIChatCreator()
         case "mistral": aichat_creator = MistralAIChatCreator()
 
-    aichat_model = aichat_creator.create_ai_chat()
+    aichat_model = aichat_creator.create_ai_chat(model, thread_id)
 
     user_prompt = data.get('user_prompt')
 
     try:
-        response = aichat_model.get_response(
-            model=model, user_prompt=user_prompt)
+        response = aichat_model.get_response(user_prompt=user_prompt)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
