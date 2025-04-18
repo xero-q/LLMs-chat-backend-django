@@ -24,6 +24,7 @@ class ThreadSerializer(serializers.ModelSerializer):
         ret = super().to_representation(instance)
         ret['model_name'] = instance.model.name
         ret['model_type'] = instance.model.type.name
+        ret['model_identifier'] = instance.model.identifier
         return ret
 
 

@@ -15,7 +15,7 @@ class LangChainModel():
     def __init__(self, thread: Thread, provider_name: str):
         try:
             model = thread.model
-            self._chat_model = init_chat_model(model.name,
+            self._chat_model = init_chat_model(model.identifier,
                                                model_provider=provider_name, api_key=os.getenv(model.api_environment_variable), temperature=model.temperature)
 
             prompts = thread.prompts.all().order_by('created_at')
@@ -100,7 +100,7 @@ class OllamaAIChat(AIChat):
         url = "http://localhost:11434/api/generate"
         headers = {"Content-Type": "application/json"}
         payload = {
-            "model": self._model.name,
+            "model": self._model.identifier,
             "prompt": user_prompt,
             "stream": False
         }
