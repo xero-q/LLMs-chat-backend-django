@@ -87,6 +87,11 @@ class MistralAIChatCreator(AIChatCreator):
         return AIChat(thread, "mistralai")
 
 
+class TogetherAIChatCreator(AIChatCreator):
+    def create_ai_chat(self, thread: Thread) -> AIChat:
+        return AIChat(thread, "together")
+
+
 class OllamaAIChat(AIChat):
     def __init__(self, thread: Thread):
         self._model = thread.model
