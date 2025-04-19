@@ -17,7 +17,7 @@ from datetime import datetime
 
 
 class ModelListView(ListAPIView):
-    queryset = Model.objects.all()
+    queryset = Model.objects.all().order_by('type__name')
     serializer_class = ModelSerializer
 
 
