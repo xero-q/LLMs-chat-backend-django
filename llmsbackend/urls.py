@@ -17,12 +17,10 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
     TokenRefreshView,
 )
 
-from chat.google_login import google_login_redirect
-from chat.views import CustomTokenObtainPairView, GoogleLogin
+from chat.views import CustomTokenObtainPairView, SignupView
 
 
 urlpatterns = [
@@ -30,11 +28,9 @@ urlpatterns = [
     path('api/', include('chat.urls')),
     path('api/auth/login', CustomTokenObtainPairView.as_view(),
          name='token_obtain_pair'),
+    path('api/auth/signup', SignupView.as_view(),
+         name='signup_view'),
     path('api/auth/refresh', TokenRefreshView.as_view(), name='token_refresh'),
-    path('auth/login', include('dj_rest_auth.urls')),
-    path('auth/social/', include('allauth.socialaccount.urls')),
-    path('auth/social/google/', GoogleLogin.as_view(), name='google_login'),
-    path('accounts/', include('allauth.urls')),
-    path("auth/google-direct", google_login_redirect,
-         name="google-login-direct"),
+    path('auth/login', include('dj_rest_auth.urls'))
+
 ]

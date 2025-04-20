@@ -5,7 +5,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 from .models import ModelType, Thread, Prompt, Model
-from .serializers import CustomTokenObtainPairSerializer, ModelSerializer, ThreadSerializer, PromptSerializer
+from .serializers import CustomTokenObtainPairSerializer, ModelSerializer, SignupSerializer, ThreadSerializer, PromptSerializer
 from .aichat_factory import MistralAIChatCreator, DeepSeekAIChatCreator, OllamaChatCreator, OpenAIChatCreator, GeminiAIChatCreator, HuggingFaceAIChatCreator, AnthropicAIChatCreator, TogetherAIChatCreator
 from collections import defaultdict
 from django.db.models.functions import TruncDate
@@ -135,3 +135,12 @@ class GoogleLogin(SocialLoginView):
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
+
+
+class SignupView(APIView):
+    def post(self, request):
+        serializer = SignupSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "User created successfully"}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
