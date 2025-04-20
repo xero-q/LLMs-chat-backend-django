@@ -16,7 +16,6 @@ class ModelType(models.Model):
 class Model(models.Model):
     name = models.CharField(max_length=255)
     identifier = models.CharField(max_length=255)
-    base_url = models.CharField(max_length=255, blank=True, null=True)
     type = models.ForeignKey(
         ModelType, related_name='models', on_delete=models.CASCADE
     )
