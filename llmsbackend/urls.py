@@ -26,7 +26,7 @@ from chat.views import CustomTokenObtainPairView, GoogleLogin
 
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
+    path("admin", admin.site.urls),
     path('api/', include('chat.urls')),
     path('api/auth/login', CustomTokenObtainPairView.as_view(),
          name='token_obtain_pair'),

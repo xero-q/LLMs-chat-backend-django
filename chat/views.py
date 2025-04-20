@@ -17,7 +17,7 @@ from datetime import datetime
 
 
 class ModelListView(ListAPIView):
-    queryset = Model.objects.all().order_by('type__name')
+    queryset = Model.objects.all().order_by('provider__name')
     serializer_class = ModelSerializer
 
 
@@ -69,7 +69,7 @@ def get_response_for_prompt(request, thread_id):
     if not thread:
         return Response({"error": "Thread not found"}, status=status.HTTP_404_NOT_FOUND)
 
-    match thread.model.type.name:
+    match thread.model.provider.name:
         case "local": aichat_creator = OllamaChatCreator()
         case "openai": aichat_creator = OpenAIChatCreator()
         case "huggingface": aichat_creator = HuggingFaceAIChatCreator()

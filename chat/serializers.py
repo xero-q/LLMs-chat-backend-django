@@ -10,7 +10,7 @@ class ModelSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)
-        ret['model_type'] = instance.type.name
+        ret['model_type'] = instance.provider.name
         return ret
 
 
@@ -23,7 +23,7 @@ class ThreadSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         ret = super().to_representation(instance)
         ret['model_name'] = instance.model.name
-        ret['model_type'] = instance.model.type.name
+        ret['model_type'] = instance.model.provider.name
         ret['model_identifier'] = instance.model.identifier
         return ret
 

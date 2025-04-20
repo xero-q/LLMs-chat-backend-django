@@ -16,7 +16,7 @@ class ModelType(models.Model):
 class Model(models.Model):
     name = models.CharField(max_length=255)
     identifier = models.CharField(max_length=255)
-    type = models.ForeignKey(
+    provider = models.ForeignKey(
         ModelType, related_name='models', on_delete=models.CASCADE
     )
     api_environment_variable = models.CharField(
@@ -27,7 +27,7 @@ class Model(models.Model):
     ])
 
     def __str__(self):
-        return f"{self.name} - ({self.type.name})"
+        return f"{self.name} - ({self.provider.name})"
 
 
 class Thread(models.Model):
