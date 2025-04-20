@@ -25,12 +25,10 @@ from chat.views import CustomTokenObtainPairView, SignupView
 
 urlpatterns = [
     path("admin", admin.site.urls),
-    path('api/', include('chat.urls')),
-    path('api/auth/login', CustomTokenObtainPairView.as_view(),
-         name='token_obtain_pair'),
-    path('api/auth/signup', SignupView.as_view(),
-         name='signup_view'),
-    path('api/auth/refresh', TokenRefreshView.as_view(), name='token_refresh'),
-    path('auth/login', include('dj_rest_auth.urls'))
-
+    path("api/", include("chat.urls")),
+    path(
+        "api/auth/login", CustomTokenObtainPairView.as_view(), name="token_obtain_pair"
+    ),
+    path("api/auth/signup", SignupView.as_view(), name="signup_view"),
+    path("api/auth/refresh", TokenRefreshView.as_view(), name="token_refresh"),
 ]

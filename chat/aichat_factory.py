@@ -11,14 +11,18 @@ from langchain_core.messages import AIMessage
 load_dotenv()
 
 
-class LangChainModel():
+class LangChainModel:
     def __init__(self, thread: Thread, provider_name: str):
         try:
             model = thread.model
-            self._chat_model = init_chat_model(model.identifier,
-                                               model_provider=provider_name, api_key=os.getenv(model.api_environment_variable), temperature=model.temperature)
+            self._chat_model = init_chat_model(
+                model.identifier,
+                model_provider=provider_name,
+                api_key=os.getenv(model.api_environment_variable),
+                temperature=model.temperature,
+            )
 
-            prompts = thread.prompts.all().order_by('created_at')
+            prompts = thread.prompts.all().order_by("created_at")
 
             self._messages = []
             for prompt in prompts:
@@ -38,7 +42,7 @@ class LangChainModel():
             raise Exception(f"Error getting response from AI API.\n{e}")
 
 
-class AIChat():
+class AIChat:
     def __init__(self, thread: Thread, provider: str):
         self._llm_model = LangChainModel(thread, provider)
 
@@ -102,7 +106,7 @@ class OllamaAIChat(AIChat):
         payload = {
             "model": self._model.identifier,
             "prompt": user_prompt,
-            "stream": False
+            "stream": False,
         }
 
         response = requests.post(url, json=payload, headers=headers)
@@ -112,4 +116,5 @@ class OllamaAIChat(AIChat):
             return data.get("response")
         else:
             raise Exception(
-                f"Error getting response from AI API.\nResponse status: {response.status_code}\nMessage: {response.text}")
+                f"Error getting response from AI API.\nResponse status: {response.status_code}\nMessage: {response.text}"
+            )

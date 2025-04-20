@@ -10,8 +10,6 @@ from .aichat_factory import MistralAIChatCreator, DeepSeekAIChatCreator, OllamaC
 from collections import defaultdict
 from django.db.models.functions import TruncDate
 from rest_framework.permissions import IsAuthenticated
-from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
-from dj_rest_auth.registration.views import SocialLoginView
 from rest_framework_simplejwt.views import TokenObtainPairView
 from datetime import datetime
 
@@ -127,10 +125,6 @@ def delete_thread(request, thread_id):
         return Response({"error": "Thread not found"}, status=status.HTTP_404_NOT_FOUND)
     thread.delete()
     return Response({"message": "Thread deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
-
-
-class GoogleLogin(SocialLoginView):
-    adapter_class = GoogleOAuth2Adapter
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
