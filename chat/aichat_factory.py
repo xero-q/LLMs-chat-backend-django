@@ -1,8 +1,6 @@
-import requests
 from dotenv import load_dotenv
 from .models import Thread
 import os
-from abc import ABC, abstractmethod
 from langchain.schema import HumanMessage
 from langchain.chat_models import init_chat_model
 from langchain_core.messages import HumanMessage
