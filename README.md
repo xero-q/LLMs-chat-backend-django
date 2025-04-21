@@ -1,6 +1,6 @@
-### LLMs - Simulator Backend
+### LLMs - Studio Backend
 
-LLMs - Simulator is a project that allows to define the info for any amount of LLMs both online and offline (using Ollama) and give them prompts and receive their response. 
+LLMs - Studio is a project that allows to define the info for any amount of LLMs both online and offline (using Ollama) and give them prompts and receive their response. 
 
 The frontend for this project is this: [Angular frontend](https://github.com/xero-q/LLMs-chat-frontend-angular)
 
