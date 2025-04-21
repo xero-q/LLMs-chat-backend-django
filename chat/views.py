@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import ModelType, Thread, Prompt, Model
 from .serializers import CustomTokenObtainPairSerializer, ModelSerializer, SignupSerializer, ThreadSerializer, PromptSerializer
-from .aichat_factory import MistralAIChatCreator, DeepSeekAIChatCreator, OllamaChatCreator, OpenAIChatCreator, GeminiAIChatCreator, HuggingFaceAIChatCreator, AnthropicAIChatCreator, TogetherAIChatCreator
+from .aichat_factory import LangChainModel
 from collections import defaultdict
 from django.db.models.functions import TruncDate
 from rest_framework.permissions import IsAuthenticated
@@ -67,17 +67,7 @@ def get_response_for_prompt(request, thread_id):
     if not thread:
         return Response({"error": "Thread not found"}, status=status.HTTP_404_NOT_FOUND)
 
-    match thread.model.provider.name:
-        case "local": aichat_creator = OllamaChatCreator()
-        case "openai": aichat_creator = OpenAIChatCreator()
-        case "huggingface": aichat_creator = HuggingFaceAIChatCreator()
-        case "gemini": aichat_creator = GeminiAIChatCreator()
-        case "anthropic": aichat_creator = AnthropicAIChatCreator()
-        case "deepseek": aichat_creator = DeepSeekAIChatCreator()
-        case "mistral": aichat_creator = MistralAIChatCreator()
-        case "together": aichat_creator = TogetherAIChatCreator()
-
-    aichat_model = aichat_creator.create_ai_chat(thread)
+    aichat_model = LangChainModel(thread)
 
     user_prompt = data.get('user_prompt')
 

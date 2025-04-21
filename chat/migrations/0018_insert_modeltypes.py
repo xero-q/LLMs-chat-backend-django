@@ -5,10 +5,11 @@ def insert_modeltypes(apps, schema_editor):
     ModelType = apps.get_model("chat", "ModelType")
     names = [
         "deepseek",
-        "gemini",
+        "google_genai",
         "huggingface",
         "local",
-        "mistral",
+        "mistralai",
+        "ollama",
         "openai",
         "together",
     ]
