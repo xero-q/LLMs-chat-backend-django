@@ -2,6 +2,8 @@ from rest_framework import serializers
 from .models import Model, Thread, Prompt
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth.models import User
+from django.db.models.functions import TruncDate
+from datetime import datetime
 
 
 class ModelSerializer(serializers.ModelSerializer):
@@ -26,6 +28,9 @@ class ThreadSerializer(serializers.ModelSerializer):
         ret["model_name"] = instance.model.name
         ret["model_type"] = instance.model.provider.name
         ret["model_identifier"] = instance.model.identifier
+        created_at_date = instance.created_at.date()
+        ret["created_at_date"] = datetime.combine(
+            created_at_date, datetime.min.time())
         return ret
 
 
