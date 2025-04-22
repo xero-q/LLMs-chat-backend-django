@@ -60,7 +60,11 @@ class ThreadListView(APIView):
             for date, threads in grouped.items()
         ]
 
-        return Response(result)
+        return Response({
+            "current_page": paginated_threads.number,
+            "has_next": paginated_threads.has_next(),
+            "results": result
+        })
 
 
 @api_view(['GET'])
