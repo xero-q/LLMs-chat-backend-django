@@ -12,6 +12,7 @@ from django.db.models.functions import TruncDate
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView
 from datetime import datetime
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
 class ModelListView(ListAPIView):
@@ -30,12 +31,24 @@ class ThreadListView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        page = int(request.query_params.get("page", 1))
+        page_size = int(request.query_params.get("pageSize", 20))
+
         threads = Thread.objects.filter(user=request.user).annotate(
             created_at_date=TruncDate('created_at')
         ).order_by('-created_at_date', '-created_at')
 
+        paginator = Paginator(threads, page_size)
+
+        try:
+            paginated_threads = paginator.page(page)
+        except PageNotAnInteger:
+            paginated_threads = paginator.page(1)
+        except EmptyPage:
+            paginated_threads = paginator.page(paginator.num_pages)
+
         grouped = defaultdict(list)
-        for thread in threads:
+        for thread in paginated_threads:
             serialized = ThreadSerializer(thread).data
             grouped[thread.created_at_date].append(serialized)
 
