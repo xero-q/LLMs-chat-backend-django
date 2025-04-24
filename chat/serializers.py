@@ -2,7 +2,6 @@ from rest_framework import serializers
 from .models import Model, Thread, Prompt
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth.models import User
-from django.db.models.functions import TruncDate
 from datetime import datetime
 
 
