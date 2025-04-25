@@ -3,6 +3,9 @@ from .models import Model, Thread, Prompt
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth.models import User
 from datetime import datetime
+from zoneinfo import ZoneInfo
+from django.utils import timezone
+from django.conf import settings
 
 
 class ModelSerializer(serializers.ModelSerializer):
@@ -24,12 +27,26 @@ class ThreadSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)
+
+        # Inject extra fields
         ret["model_name"] = instance.model.name
         ret["model_type"] = instance.model.provider.name
         ret["model_identifier"] = instance.model.identifier
-        created_at_date = instance.created_at.date()
+
+        # Timezone handling
+        user_tz = ZoneInfo(settings.TIME_ZONE)
+        utc = ZoneInfo("UTC")
+
+        created_at = instance.created_at
+        if timezone.is_naive(created_at):
+            created_at = created_at.replace(tzinfo=utc)
+
+        local_created_at = created_at.astimezone(user_tz)
         ret["created_at_date"] = datetime.combine(
-            created_at_date, datetime.min.time())
+            local_created_at.date(), datetime.min.time()
+            # optionally just `.date().isoformat()` if you only want the date
+        ).isoformat()
+
         return ret
 
 

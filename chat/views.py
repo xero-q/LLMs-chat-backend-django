@@ -13,6 +13,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView
 from datetime import datetime
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.utils.timezone import localtime
+from django.utils import timezone
+from zoneinfo import ZoneInfo
+from django.conf import settings
 
 
 class ModelListView(ListAPIView):
@@ -34,9 +38,8 @@ class ThreadListView(APIView):
         page = int(request.query_params.get("page", 1))
         page_size = int(request.query_params.get("pageSize", 20))
 
-        threads = Thread.objects.filter(user=request.user).annotate(
-            created_at_date=TruncDate('created_at')
-        ).order_by('-created_at_date', '-created_at')
+        threads = Thread.objects.filter(
+            user=request.user).order_by('-created_at')
 
         paginator = Paginator(threads, page_size)
 
@@ -47,14 +50,25 @@ class ThreadListView(APIView):
         except EmptyPage:
             paginated_threads = paginator.page(paginator.num_pages)
 
+        user_tz = ZoneInfo(settings.TIME_ZONE)
+        utc = ZoneInfo("UTC")
+
         grouped = defaultdict(list)
         for thread in paginated_threads:
+            created_at = thread.created_at
+
+            if timezone.is_naive(created_at):
+                created_at = created_at.replace(tzinfo=utc)
+
+            localized_dt = created_at.astimezone(user_tz)
+            date_key = localized_dt.date()
+
             serialized = ThreadSerializer(thread).data
-            grouped[thread.created_at_date].append(serialized)
+            grouped[date_key].append(serialized)
 
         result = [
             {
-                "date": datetime.combine(date, datetime.min.time()),
+                "date": datetime.combine(date, datetime.min.time()).isoformat(),
                 "threads": threads
             }
             for date, threads in grouped.items()

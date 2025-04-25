@@ -19,7 +19,8 @@ class Model(models.Model):
     provider = models.ForeignKey(
         ModelType, related_name="models", on_delete=models.CASCADE
     )
-    api_environment_variable = models.CharField(max_length=255, blank=True, null=True)
+    api_environment_variable = models.CharField(
+        max_length=255, blank=True, null=True)
     temperature = models.FloatField(
         default=0.7, validators=[MinValueValidator(0.0), MaxValueValidator(1)]
     )
@@ -30,9 +31,11 @@ class Model(models.Model):
 
 class Thread(models.Model):
     title = models.CharField(max_length=255, unique=True)
-    model = models.ForeignKey(Model, related_name="threads", on_delete=models.CASCADE)
+    model = models.ForeignKey(
+        Model, related_name="threads", on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey(User, related_name="threads", on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        User, related_name="threads", on_delete=models.CASCADE)
 
     def __str__(self):
         return f"{self.id} - {self.title}"
@@ -41,7 +44,8 @@ class Thread(models.Model):
 class Prompt(models.Model):
     prompt = models.TextField()
     response = models.TextField()
-    thread = models.ForeignKey(Thread, related_name="prompts", on_delete=models.CASCADE)
+    thread = models.ForeignKey(
+        Thread, related_name="prompts", on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
