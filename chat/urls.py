@@ -7,6 +7,8 @@ from .views import (
     get_response_for_prompt,
     start_thread,
     delete_thread,
+    ListViewThreadsMonth,
+    threads_by_month
 )
 
 urlpatterns = [
@@ -17,4 +19,7 @@ urlpatterns = [
     path("threads/<int:thread_id>/response", get_response_for_prompt),
     path("threads/<int:model_id>/start", start_thread),
     path("threads/<int:thread_id>", delete_thread),
+    path("threads-month", ListViewThreadsMonth.as_view()),
+    path("threads-month-index", threads_by_month)
+
 ]

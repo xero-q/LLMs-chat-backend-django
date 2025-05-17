@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Model, Thread, Prompt
+from .models import Model, Thread, Prompt, ViewThreadsMonth
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth.models import User
 from datetime import datetime
@@ -76,3 +76,9 @@ class SignupSerializer(serializers.ModelSerializer):
             password=validated_data["password"],
         )
         return user
+
+
+class ViewThreadsMonthSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ViewThreadsMonth
+        fields = "__all__"

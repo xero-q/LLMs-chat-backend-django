@@ -54,3 +54,12 @@ class Prompt(models.Model):
     @staticmethod
     def get_prompts_by_thread(thread_id):
         return Prompt.objects.filter(thread_id=thread_id).order_by("created_at")
+
+
+class ViewThreadsMonth(models.Model):
+    month = models.CharField(max_length=255, primary_key=True)
+    total = models.IntegerField()
+
+    class Meta:
+        managed = False
+        db_table = "threads_by_month"

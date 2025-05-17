@@ -4,8 +4,8 @@ from rest_framework.views import APIView
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Thread, Prompt, Model
-from .serializers import CustomTokenObtainPairSerializer, ModelSerializer, SignupSerializer, ThreadSerializer, PromptSerializer
+from .models import Thread, Prompt, Model, ViewThreadsMonth
+from .serializers import CustomTokenObtainPairSerializer, ModelSerializer, SignupSerializer, ThreadSerializer, PromptSerializer, ViewThreadsMonthSerializer
 from .aichat_factory import LangChainModel
 from collections import defaultdict
 from django.db.models.functions import TruncDate
@@ -17,6 +17,7 @@ from django.utils.timezone import localtime
 from django.utils import timezone
 from zoneinfo import ZoneInfo
 from django.conf import settings
+import calendar
 
 
 class ModelListView(ListAPIView):
@@ -146,6 +147,23 @@ def delete_thread(request, thread_id):
         return Response({"error": "Thread not found"}, status=status.HTTP_404_NOT_FOUND)
     thread.delete()
     return Response({"message": "Thread deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+
+
+class ListViewThreadsMonth(ListAPIView):
+    queryset = ViewThreadsMonth.objects.all()
+    serializer_class = ViewThreadsMonthSerializer
+
+
+@api_view(['GET'])
+def threads_by_month(request):
+    month = int(request.query_params.get('month'))
+    if not month or month < 1 or month > 12:
+        return Response({"error": "Month is required (between 1 and 12)"}, status=status.HTTP_400_BAD_REQUEST)
+
+    month_name = calendar.month_name[month]
+    results = ViewThreadsMonth.objects.filter(month=month_name)
+    serializer = ViewThreadsMonthSerializer(results, many=True)
+    return Response(serializer.data)
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
