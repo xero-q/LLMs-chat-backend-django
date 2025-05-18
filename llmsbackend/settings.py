@@ -30,8 +30,7 @@ SECRET_KEY = "django-insecure-@g7a1o9txx2)3^o5@uwe#&5w)#36a7*n!^mk#9a6&%r31i4aox
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ['192.168.1.2', '127.0.0.1', 'localhost']
 
 # Application definition
 
@@ -50,6 +49,7 @@ INSTALLED_APPS = [
     "dj_rest_auth.registration",
     "rest_framework.authtoken",
     "django.contrib.sites",
+    "django_prometheus"
 ]
 
 MIDDLEWARE = [
@@ -62,6 +62,9 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
+MIDDLEWARE = ['django_prometheus.middleware.PrometheusBeforeMiddleware',
+              *MIDDLEWARE, 'django_prometheus.middleware.PrometheusAfterMiddleware']
 
 ROOT_URLCONF = "llmsbackend.urls"
 

@@ -31,4 +31,5 @@ urlpatterns = [
     ),
     path("api/auth/signup", SignupView.as_view(), name="signup_view"),
     path("api/auth/refresh", TokenRefreshView.as_view(), name="token_refresh"),
+    path('', include('django_prometheus.urls')),
 ]
